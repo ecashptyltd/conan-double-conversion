@@ -8,16 +8,19 @@ import os
 class DoubleConversionConan(ConanFile):
     name = "double-conversion"
     version = "3.0.0"
-    url = "https://github.com/google/double-conversion"
+    url = "https://github.com/bincrafters/conan-double-conversion"
+    homepage = "https://github.com/google/double-conversion"
     description = "Efficient binary-decimal and decimal-binary conversion routines for IEEE doubles."
-    license = "https://github.com/google/double-conversion/blob/master/LICENSE"
-    generators = "cmake"
+    license = "MIT"
+    exports = ["LICENSE.md"]
     exports_sources = ["CMakeLists.txt"]
+    generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
-    requires = ""
-
+    source_subfolder = "source_subfolder"
+    build_subfolder = "build_subfolder"
+    
     def configure(self):
         del self.settings.compiler.libcxx
 
@@ -28,29 +31,24 @@ class DoubleConversionConan(ConanFile):
         source_url = "https://github.com/google/double-conversion"
         tools.get("{0}/archive/v{1}.tar.gz".format(source_url, self.version))
         extracted_dir = self.name + "-" + self.version
-        os.rename(extracted_dir, "sources")
+        os.rename(extracted_dir, self.source_subfolder)
 
-    def build(self):
+    def configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["BUILD_TESTING"] = False
-        if self.settings.os != "Windows":
-            cmake.definitions["CMAKE_POSITION_INDEPENDENT_CODE"] = self.options.fPIC
-        cmake.configure()
+        cmake.definitions["BUILD_TESTING"] = False # example
+        if self.settings.os != 'Windows':
+            cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
+        cmake.configure(build_folder=self.build_subfolder)
+        return cmake
+        
+    def build(self):
+        cmake = self.configure_cmake()
         cmake.build()
 
     def package(self):
-        self.copy("sources/LICENSE", dst="licenses", keep_path=False)
-        self.copy(pattern="*.h", dst="include/double-conversion", src="sources/double-conversion")
-        with tools.chdir("sources"):
-            self.copy(pattern="*.dll", dst="bin", keep_path=False)
-            if self.settings.build_type == "Debug":
-                self.copy(pattern="*.pdb", dst="bin", keep_path=False)
-            self.copy(pattern="*.lib", dst="lib", keep_path=False)
-            if self.options.shared == True:
-                self.copy(pattern="*.so*", dst="lib", src="lib", keep_path=False)
-                self.copy(pattern="*.dylib", dst="lib", src="lib", keep_path=False)
-            else:
-                self.copy(pattern="*.a", dst="lib", src="lib", keep_path=False)
+        cmake = self.configure_cmake()
+        cmake.install()
+        self.copy(pattern="LICENSE", dst="licenses", src=self.source_subfolder, keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
