@@ -35,6 +35,7 @@ class DoubleConversionConan(ConanFile):
 
     def configure_cmake(self):
         cmake = CMake(self)
+        cmake.definitions["CMAKE_INSTALL_LIBDIR"] = "lib"
         cmake.definitions["BUILD_TESTING"] = False # example
         if self.settings.os != 'Windows':
             cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
