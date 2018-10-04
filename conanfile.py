@@ -7,7 +7,7 @@ import os
 
 class DoubleConversionConan(ConanFile):
     name = "double-conversion"
-    version = "3.0.0"
+    version = "3.1.1"
     url = "https://github.com/bincrafters/conan-double-conversion"
     homepage = "https://github.com/google/double-conversion"
     description = "Efficient binary-decimal and decimal-binary conversion routines for IEEE doubles."
