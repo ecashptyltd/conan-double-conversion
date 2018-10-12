@@ -29,7 +29,6 @@ class DoubleConversionConan(ConanFile):
             self.options.remove("fPIC")
 
     def configure(self):
-        del self.settings.compiler.libcxx
         if self.settings.os == "Windows" and \
            self.settings.compiler == "Visual Studio" and \
            float(self.settings.compiler.version.value) < 14:
